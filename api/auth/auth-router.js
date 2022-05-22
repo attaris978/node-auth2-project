@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 router.post("/register", validateRoleName, (req, res, next) => {
-  req.body.password = bcrypt.hashSync(req.body.password,8);
+  req.body.password = bcrypt.hashSync(req.body.password,4);
   users.add(req.body)
   .then(user => res.status(201).json(user))
   .catch( err => next(err))
@@ -31,9 +31,10 @@ router.post("/login", checkUsernameExists, (req, res, next) => {
   .then(user => {
     if (user && bcrypt.compareSync(password, user.password)) {
       const token = generateToken(user);
+      
       res.status(200)
       .json({
-        message: `Welcome ${user.username}! Have a token!`,
+        message: `${user.username} is back!`,
         token
       })
     } else {
@@ -64,8 +65,11 @@ router.post("/login", checkUsernameExists, (req, res, next) => {
 
 function generateToken(user) {
   const claims = {
-    subject: user.id,
-    username: user.username
+    subject: user.user_id,
+    
+    username: user.username,
+    role_name: user.role_name,
+    iat: Date.now()
   };
   const options = {
     expiresIn: '1d'
